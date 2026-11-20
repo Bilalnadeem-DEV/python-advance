@@ -1,0 +1,267 @@
+"""Fast API 1 - first runnable FastAPI app.
+
+Run it from this folder:
+
+    uvicorn main:app --reload
+
+Then open http://127.0.0.1:8000/docs for the interactive Swagger UI.
+"""
+
+#import Data
+from data import tasksData
+
+from fastapi import FastAPI
+from pydantic import BaseModel, Field, EmailStr
+
+app = FastAPI(title = "MyFastApi", version= "1.0.0")
+
+
+
+# Static Route
+
+@app.get("/")
+def home():
+    return {
+        "This is root"
+    }
+
+@app.get("/health")
+def health():
+    return {
+        "status" : "OK"
+    }
+
+@app.get("/users")
+def users():
+    return{
+        "users" : ["User1", "User 2", "User3"]
+    }
+
+# ---------------------------------------------------------------------------------------
+# Dynamic Route
+# Path and query parameters 
+# ---------------------------------------------------------------------------------------
+
+
+@app.get("/usersByUSerID/{userID}")
+def usersbyUserID(userID):
+    return{
+        "usersID" : userID
+    }
+
+@app.get("/task/{taskId}")
+def getTaskByTaskID(taskID: int):
+    td = tasksData
+    searchedTask = {}
+
+    for data in td:
+        if taskID == data["task_id"]:
+            searchedTask = data
+
+    return {
+        "task" : searchedTask 
+    }
+
+
+# ---------------------------------------------------------------------------------------
+# Optional query parameters 
+# ---------------------------------------------------------------------------------------
+
+@app.get("/items")
+def getItems(name: str = None, price: int = 0):
+    return{
+        "name": name,
+        "price": price
+    }
+
+
+# ---------------------------------------------------------------------------------------
+# Post
+# ---------------------------------------------------------------------------------------
+
+@app.post("/create-user")
+def createUSer(name: str, age: int):
+    return{
+        "name": name,
+        age: age
+    }
+
+@app.post("/create-user-dynamic")
+def createUserDynamic(user: dict):
+    return{
+        "message": "User Created",
+        "data": user
+    }
+
+# ---------------------------------------------------------------------------------------
+# Pydantic - Data validation 
+# ---------------------------------------------------------------------------------------
+
+class User(BaseModel):
+    name: str
+    age: int
+
+@app.post("/create-user-validated")
+def createUserValidated(user: User):
+    return{
+        "Message": "User created",
+        "user": user
+    }
+
+class Product(BaseModel):
+    name: str = Field(min_length = 3, max_length = 50)
+    price: float = Field(gt=0)
+    quantity: int = Field(ge=1)
+
+
+@app.post("/create-product-validated")
+def createProductValidated(product: Product):
+    return {
+        "Message": "Product created successfully",
+        "product": product
+    }
+
+class Employee(BaseModel):
+    name: str
+    email: EmailStr
+    age: int = Field(ge=18, le=60)
+    salary: float = Field(gt=0)
+
+
+@app.post("/create-employee-validated")
+def createEmployeeValidated(employee: Employee):
+    return {
+        "Message": "Employee created successfully",
+        "employee": employee
+    }
+
+class Student(BaseModel):
+    name: str = Field(min_length=3, max_length=30)
+    age: int = Field(ge=5, le=30)
+    roll_number: int = Field(gt=0)
+    marks: float = Field(ge=0, le=100)
+
+
+@app.post("/create-student")
+def create_student(student: Student):
+    return {
+        "message": "Student registered successfully",
+        "student": student
+    }
+
+
+class Address(BaseModel):
+    city: str
+    country: str
+    postal_code: str
+
+
+class User(BaseModel):
+    name: str
+    age: int = Field(ge=18)
+    address: Address
+
+
+@app.post("/create-user")
+def create_user(user: User):
+    return {
+        "message": "User created successfully",
+        "user": user
+    }
+
+
+# {
+#     "name": "Ali",
+#     "age": 25,
+#     "address": {
+#         "city": "Lahore",
+#         "country": "Pakistan",
+#         "postal_code": "54000"
+#     }
+# }
+
+
+class Department(BaseModel):
+    department_name: str
+    department_id: int
+
+
+class Address(BaseModel):
+    city: str
+    country: str
+
+
+class Employee(BaseModel):
+    employee_id: int
+    name: str
+    age: int = Field(ge=18)
+    department: Department
+    address: Address
+
+
+@app.post("/create-employee")
+def create_employee(employee: Employee):
+    return {
+        "message": "Employee created successfully",
+        "employee": employee
+    }
+
+# {
+#     "employee_id": 101,
+#     "name": "Ahmed",
+#     "age": 28,
+#     "department": {
+#         "department_name": "IT",
+#         "department_id": 10
+#     },
+#     "address": {
+#         "city": "Lahore",
+#         "country": "Pakistan"
+#     }
+# }
+
+
+class Product(BaseModel):
+    product_id: int
+    product_name: str
+    price: float = Field(gt=0)
+
+
+class Customer(BaseModel):
+    name: str
+    email: str
+
+
+class Order(BaseModel):
+    order_id: int
+    customer: Customer
+    products: list[Product]
+
+
+@app.post("/create-order")
+def create_order(order: Order):
+    return {
+        "message": "Order created successfully",
+        "order": order
+    }
+
+
+# {
+#     "order_id": 1001,
+#     "customer": {
+#         "name": "Ali",
+#         "email": "ali@gmail.com"
+#     },
+#     "products": [
+#         {
+#             "product_id": 1,
+#             "product_name": "Laptop",
+#             "price": 1200
+#         },
+#         {
+#             "product_id": 2,
+#             "product_name": "Mouse",
+#             "price": 25
+#         }
+#     ]
+# }

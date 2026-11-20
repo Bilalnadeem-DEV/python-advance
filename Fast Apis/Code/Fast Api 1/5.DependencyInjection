@@ -1,0 +1,44 @@
+from fastapi import FastAPI, status, HTTPException, Depends, Header
+from pydantic import BaseModel
+
+app = FastAPI()
+
+# Common logic
+
+def common_logic():
+    return{
+        "message": "common logic executed"
+    }
+
+def getCurrentUser():
+    return{
+        "user": "Bilal"
+    }
+
+def verifyToken(token: str = Header(None)):
+    if token != "MySecretToken":
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
+    return {
+        "user": "Authorized User"
+    }
+
+
+# routes
+
+@app.get("/home")
+def home(data = Depends(common_logic)):
+    return data
+
+@app.get("/userProfile")
+def getUserProfile(data = Depends(getCurrentUser)):
+    return data
+
+@app.get("/secure-data")
+def get_secure_Data(user = Depends(verifyToken)):
+    return {
+        "message": "Secure data accessed",
+        "user": user
+    }

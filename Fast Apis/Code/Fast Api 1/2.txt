@@ -1,0 +1,168 @@
+"""Fast API 1 - first runnable FastAPI app.
+
+Run it from this folder:
+
+    uvicorn main:app --reload
+
+Then open http://127.0.0.1:8000/docs for the interactive Swagger UI.
+"""
+
+from typing import Annotated
+
+from fastapi import FastAPI, HTTPException, Path, Query, status
+from pydantic import BaseModel, Field
+
+app = FastAPI(
+    title="Fast API 1",
+    description="A first FastAPI service: path params, query params and a CRUD resource.",
+    version="0.1.0",
+)
+
+
+# ---------------------------------------------------------------- models ----
+# Pydantic v2 models describe the request/response contract. FastAPI uses them
+# to validate input, serialise output and generate the OpenAPI docs.
+
+class TaskIn(BaseModel):
+    """What a client sends when creating or replacing a task."""
+
+    title: str = Field(min_length=1, max_length=100, examples=["Learn FastAPI"])
+    description: str | None = Field(default=None, max_length=500)
+    done: bool = False
+
+
+class Task(TaskIn):
+    """What the API sends back: the input plus the server-assigned id."""
+
+    id: int
+
+
+class User(BaseModel):
+    """A read-only user record returned by GET /users."""
+
+    id: int
+    name: str
+    email: str
+    role: str = "member"
+    active: bool = True
+
+
+# ----------------------------------------------------------------- store ----
+# An in-memory dict stands in for a database. It resets on every restart,
+# which is fine for teaching; a real app would use SQLAlchemy here.
+
+_tasks: dict[int, Task] = {
+    1: Task(id=1, title="Read the FastAPI docs", description="Start with the tutorial", done=True),
+    2: Task(id=2, title="Build a first endpoint", done=False),
+}
+_next_id = 3
+
+# Static data: hard-coded, never modified by any route.
+_users: list[User] = [
+    User(id=1, name="Ada Lovelace", email="ada@example.com", role="admin"),
+    User(id=2, name="Grace Hopper", email="grace@example.com", role="admin"),
+    User(id=3, name="Alan Turing", email="alan@example.com"),
+    User(id=4, name="Katherine Johnson", email="katherine@example.com"),
+    User(id=5, name="Linus Torvalds", email="linus@example.com", active=False),
+]
+
+
+def _get_task_or_404(task_id: int) -> Task:
+    task = _tasks.get(task_id)
+    if task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found",
+        )
+    return task
+
+
+# ---------------------------------------------------------------- routes ----
+
+@app.get("/", tags=["meta"])
+def read_root() -> dict[str, str]:
+    """Smallest possible endpoint: a GET that returns JSON."""
+    return {"message": "Hello, FastAPI!", "docs": "/docs"}
+
+
+@app.get("/health", tags=["meta"])
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/about", tags=["meta"])
+def about() -> dict[str, str | list[str]]:
+    """GET route returning static data about this service.
+
+    Nothing is read from a database: the dict below is built fresh on every
+    request, so the response is always the same.
+    """
+    return {
+        "name": "Fast API 1",
+        "version": app.version,
+        "description": "Teaching API for the Web APIs, SQL & Streamlit with Python course",
+        "author": "Python Advance course",
+        "framework": "FastAPI + Pydantic v2",
+        "topics": ["path params", "query params", "request bodies", "status codes"],
+    }
+
+
+@app.get("/users", response_model=list[User], tags=["users"])
+def list_users() -> list[User]:
+    """GET route returning a static list of users.
+
+    `response_model=list[User]` tells FastAPI to validate and document the
+    shape of the response, which is why /docs shows the User schema here.
+    """
+    return _users
+
+
+@app.get("/tasks", response_model=list[Task], tags=["tasks"])
+def list_tasks(
+    done: Annotated[bool | None, Query(description="Filter by completion state")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
+) -> list[Task]:
+    """Query parameters are ordinary function arguments with defaults."""
+    tasks = list(_tasks.values())
+    if done is not None:
+        tasks = [t for t in tasks if t.done is done]
+    return tasks[:limit]
+
+
+@app.get("/tasks/{task_id}", response_model=Task, tags=["tasks"])
+def get_task(task_id: Annotated[int, Path(ge=1, description="Task id")]) -> Task:
+    """Path parameters are declared in the URL and typed in the signature."""
+    return _get_task_or_404(task_id)
+
+
+@app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED, tags=["tasks"])
+def create_task(payload: TaskIn) -> Task:
+    """A Pydantic model parameter means 'read and validate the JSON body'."""
+    global _next_id
+    task = Task(id=_next_id, **payload.model_dump())
+    _tasks[task.id] = task
+    _next_id += 1
+    return task
+
+
+@app.put("/tasks/{task_id}", response_model=Task, tags=["tasks"])
+def replace_task(task_id: int, payload: TaskIn) -> Task:
+    """PUT replaces the whole resource; it must be idempotent."""
+    _get_task_or_404(task_id)
+    task = Task(id=task_id, **payload.model_dump())
+    _tasks[task_id] = task
+    return task
+
+
+@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["tasks"])
+def delete_task(task_id: int) -> None:
+    """204 means success with no response body."""
+    _get_task_or_404(task_id)
+    del _tasks[task_id]
+
+
+if __name__ == "__main__":
+    # Lets you run `python main.py` as well as `uvicorn main:app --reload`.
+    import uvicorn
+
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

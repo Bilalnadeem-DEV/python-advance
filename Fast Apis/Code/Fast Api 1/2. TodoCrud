@@ -1,0 +1,84 @@
+"""Fast API 1 - first runnable FastAPI app.
+
+Run it from this folder:
+
+    uvicorn main:app --reload
+
+Then open http://127.0.0.1:8000/docs for the interactive Swagger UI.
+"""
+
+#import Data
+from data import tasksData
+
+from fastapi import FastAPI
+from pydantic import BaseModel, Field, EmailStr
+
+app = FastAPI(title = "MyFastApi", version= "1.0.0")
+
+
+
+todos = []
+
+class Todo(BaseModel):
+    id: int
+    title:str
+    completed:bool
+
+
+@app.post("./todos")
+def create_todo(todo:Todo):
+    todos.append(todo)
+    return{
+        "message": "TODO added successfully",
+        "data": todo
+    }
+
+@app.get("/todos")
+def getTodos():
+    return {
+        "message": "Data fetched successfully",
+        "Todos: ": todos
+    }
+
+@app.get("/todos/{todos_id}")
+def getTodosByID(id: int):
+    for todo in todos:
+        if todo.id == id:
+            return {
+                "message": "Data fetched successfully",
+                "Todo": todo
+            }
+        else:
+            return {
+            "error": "No data found"
+        }
+
+@app.put("/todos/{todo_id}")
+def updateToso(todo_id: int, updatedTodo: Todo):
+    for index, todo in enumerate(todos):
+        if todo.id == todo_id:
+            todos[index] = updatedTodo
+            return {
+                "message": "Data updated successfully",
+                "Todo": todo
+            }
+        else:
+            return {
+                "error": "No data found"
+            }
+
+
+@app.delete("/todos/{todo_id}")
+def deleteTodo(todo_id: int):
+    for index, todo in enumerate(todos):
+        if todo.id == todo_id:
+            deleted_todo = todos.pop(index)
+
+            return {
+                "message": "Data deleted successfully",
+                "Todo": deleted_todo
+            }
+
+    return {
+        "error": "No data found"
+    }

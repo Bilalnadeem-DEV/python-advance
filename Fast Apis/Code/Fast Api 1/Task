@@ -1,0 +1,227 @@
+# Assignment: Student Management System – FastAPI + SQLite CRUD
+
+## Project Overview
+
+Develop a Student Management System using Python, FastAPI, and SQLite. The application should allow an administrator to manage students, departments, and courses through REST APIs.
+
+Implement complete CRUD (Create, Read, Update, Delete) operations.
+
+## 1. Database Requirements
+
+Create a SQLite database named `student_management.db` containing a maximum of **3 tables**.
+
+### Table 1: Students
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | INTEGER | Primary Key, Auto Increment |
+| name | TEXT | Student's full name |
+| email | TEXT | Unique email address |
+| age | INTEGER | Student's age |
+| department_id | INTEGER | Foreign Key referencing Departments |
+
+### Table 2: Departments
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | INTEGER | Primary Key, Auto Increment |
+| name | TEXT | Department name |
+| building | TEXT | Department building |
+
+### Table 3: Courses
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | INTEGER | Primary Key, Auto Increment |
+| name | TEXT | Course name |
+| credit_hours | INTEGER | Course credit hours |
+| student_id | INTEGER | Foreign Key referencing Students |
+
+## 2. Functional Requirements
+
+### A. Student Management
+
+Implement the following operations:
+
+1. Create a student with name, email, age, and department ID.
+2. Retrieve all students.
+3. Retrieve a specific student using their ID.
+4. Update student information.
+5. Delete a student using their ID.
+
+Additional requirements:
+- Student email addresses must be unique.
+- Verify that the department exists before creating a student.
+- Return HTTP 404 if the student does not exist.
+- Handle associated course records appropriately when deleting a student.
+
+### B. Department Management
+
+Implement the following operations:
+
+1. Create a department.
+2. Retrieve all departments.
+3. Retrieve a department using its ID.
+4. Update department information.
+5. Delete a department.
+
+Additional requirements:
+- Department names must be unique.
+- A department cannot be deleted while students are assigned to it.
+
+### C. Course Management
+
+Implement the following operations:
+
+1. Create a course for a particular student.
+2. Retrieve all courses.
+3. Retrieve a course using its ID.
+4. Retrieve all courses enrolled by a particular student.
+5. Update course information.
+6. Delete a course.
+
+Additional requirements:
+- A course must belong to an existing student.
+- Credit hours must be greater than zero.
+- A student can enroll in multiple courses.
+
+## 3. API Endpoint Requirements
+
+| Method | Endpoint | Operation |
+|---|---|---|
+| POST | /students | Create student |
+| GET | /students | Get all students |
+| GET | /students/{id} | Get student by ID |
+| PUT | /students/{id} | Update student |
+| DELETE | /students/{id} | Delete student |
+| POST | /departments | Create department |
+| GET | /departments | Get all departments |
+| GET | /departments/{id} | Get department |
+| PUT | /departments/{id} | Update department |
+| DELETE | /departments/{id} | Delete department |
+| POST | /courses | Create course |
+| GET | /courses | Get all courses |
+| GET | /courses/{id} | Get course by ID |
+| GET | /students/{id}/courses | Get student's courses |
+| PUT | /courses/{id} | Update course |
+| DELETE | /courses/{id} | Delete course |
+
+## 4. Technical Requirements
+
+Use the following technologies:
+
+- Python
+- FastAPI for REST API development.
+- SQLite3 for database connectivity.
+- Pydantic for request validation.
+- Uvicorn to run the application.
+- HTTPException for error handling.
+- SQLite Cursor for executing SQL queries.
+- Parameterized SQL queries using `?` placeholders.
+
+## 5. Database Operations
+
+Demonstrate practical usage of:
+
+- CREATE TABLE
+- INSERT INTO
+- SELECT
+- UPDATE
+- DELETE
+- WHERE
+- JOIN
+- fetchall()
+- fetchone()
+- commit()
+
+Enable SQLite foreign key constraints:
+
+`connection.execute("PRAGMA foreign_keys = ON")`
+
+Use appropriate primary keys, foreign keys, and deletion rules.
+
+## 6. Sample Data for Testing
+
+Create the following departments:
+
+| Department | Building |
+|---|---|
+| Computer Science | Block A |
+| Software Engineering | Block B |
+| Data Science | Block C |
+
+Create the following students:
+
+| Name | Email | Age | Department |
+|---|---|---|---|
+| Ali Ahmed | ali@example.com | 21 | Computer Science |
+| Sara Khan | sara@example.com | 22 | Data Science |
+| Usman Malik | usman@example.com | 23 | Software Engineering |
+
+Create the following courses:
+
+| Course | Credit Hours | Student |
+|---|---|---|
+| Python Programming | 3 | Ali Ahmed |
+| Database Systems | 3 | Ali Ahmed |
+| Machine Learning | 4 | Sara Khan |
+| Software Design | 3 | Usman Malik |
+
+## 7. Error Handling Requirements
+
+Handle the following scenarios:
+
+- Student does not exist.
+- Department does not exist.
+- Course does not exist.
+- Duplicate student email.
+- Duplicate department name.
+- Invalid student age.
+- Invalid course credit hours.
+- Attempting to delete a department that has assigned students.
+- Invalid request body.
+
+Use appropriate HTTP status codes:
+
+| Status Code | Meaning |
+|---|---|
+| 200 | Successful request |
+| 201 | Resource created |
+| 400 | Bad request |
+| 404 | Resource not found |
+| 409 | Duplicate or conflicting resource |
+| 422 | Request validation error |
+
+## 8. Expected Project Structure
+
+```text
+student_management/
+│
+├── main.py
+├── database.py
+├── models.py
+├── student_management.db
+│
+└── requirements.txt
+```
+
+Keep the implementation simple. Avoid unnecessary architectural patterns.
+
+## 9. Submission Requirements
+
+Submit the following:
+
+1. Complete Python source code.
+2. SQLite database containing all three tables.
+3. All required CRUD API endpoints.
+4. Screenshots of successful API requests through Swagger UI.
+5. Evidence of records being created, retrieved, updated, and deleted.
+
+## 10. Bonus Challenges (Optional)
+
+1. Implement a search API to find students by name.
+2. Retrieve students belonging to a particular department.
+3. Use SQL JOIN to return student details with department names.
+4. Implement pagination for the students endpoint.
+
+**Expected Outcome:** A fully functional Student Management REST API with three related database tables, demonstrating CRUD operations, HTTP methods, database relationships, request validation, and error handling.

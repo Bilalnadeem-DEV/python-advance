@@ -1,0 +1,65 @@
+from fastapi import FastAPI, Path, Query, Body
+from pydantic import BaseModel, Field
+
+app = FastAPI()
+
+todos = []
+
+
+class Todo(BaseModel):
+    title: str = Field(min_length=3)
+    description: str
+    completed: bool = False
+
+@app.post("/todos")
+def createTodo(todo: Todo, id: int):
+
+    todos.append(todo)
+
+    return {
+        "message": "Todo created successfully",
+        "todo": todo
+    }
+
+@app.get("/todos")
+def getTodos():
+    return {
+        "message": "Data fetched successfully",
+        "Todos: ": todos
+    }
+
+
+
+# {
+#     "id": 1,
+#     "title": "Learn FastAPI",
+#     "description": "Practice CRUD operations",
+#     "completed": false
+# }
+
+@app.put("/todos/{todo_id}")
+def updateTodo(
+    todo_id: int,
+    priority: str,
+    updatedTodo: Todo
+):
+
+    for index, todo in enumerate(todos):
+
+        if todo["id"] == todo_id:
+
+            todos[index]["title"] = updatedTodo.title
+            todos[index]["description"] = updatedTodo.description
+            todos[index]["completed"] = updatedTodo.completed
+            todos[index]["priority"] = priority
+
+            return {
+                "message": "Todo updated successfully",
+                "todo_id": todo_id,
+                "priority": priority,
+                "updated_data": todos[index]
+            }
+
+    return {
+        "error": "Todo not found"
+    }

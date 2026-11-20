@@ -1,0 +1,3 @@
+Step1: Install the server that will help in running the application
+Pip install uvicorn
+pip list
