@@ -1,0 +1,9 @@
+student_id,name,email,city,dept,course,marks
+1, ayesha khan ,AYESHA@UNI.PK,lahore,CS,101,88
+2,Bilal Ahmed,bilal@uni.pk,Karachi ,CS,101,75
+2,Bilal Ahmed,bilal@uni.pk,Karachi ,CS,101,75
+3,Fatima Noor,fatima@uni.pk,LAHORE,Math,201,81
+4,Hamza Ali,hamza@uni.pk,Islamabad,Math,201,
+5,Sana Malik,sana@uni.pk,Lahore,CS,101,105
+6,Usman Tariq,,karachi,CS,102,abc
+7,zara hussain,Zara@Uni.pk, Lahore,CS,102,91

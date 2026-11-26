@@ -1,0 +1,7 @@
+{
+  "raw_file": "data/raw/students_raw.csv",
+  "db_file": "data/output/school_clean.db",
+  "export_dir": "data/output",
+  "marks_range": [0, 100],
+  "log_level": "INFO"
+}
